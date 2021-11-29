@@ -10,12 +10,10 @@ rm -rf $1/product/app/YouTube
 rm -rf $1/product/app/YouTubeMusicPrebuilt
 rm -rf $1/product/app/PrebuiltGmail
 rm -rf $1/product/app/VZWAPNLib
-rm -rf $1/product/app/PrebuiltBugle
 rm -rf $1/product/app/GoogleCamera
 rm -rf $1/product/app/Maps
 rm -rf $1/product/app/Drive
 rm -rf $1/product/app/DiagnosticsToolPrebuilt
-rm -rf $1/product/app/Chrome
 rm -rf $1/product/app/CalendarGooglePrebuilt
 rm -rf $1/product/app/NgaResources
 rm -rf $1/product/priv-app/BetaFeedback
@@ -63,7 +61,6 @@ rm -rf $1/product/overlay/PixelDocumentsUIOverlay
 # Some Unused Google Apps
 rm -rf $1/product/app/CalculatorGooglePrebuilt
 rm -rf $1/product/app/DevicePolicyPrebuilt
-rm -rf $1/product/app/GoogleContacts
 rm -rf $1/product/app/GoogleTTS
 rm -rf $1/product/app/arcore
 rm -rf $1/product/app/AndroidAutoStubPrebuilt
@@ -71,7 +68,26 @@ rm -rf $1/product/priv-app/SafetyHubPrebuilt
 rm -rf $1/product/priv-app/TipsPrebuilt
 rm -rf $1/product/priv-app/TurboPrebuilt
 rm -rf $1/product/priv-app/Velvet
-rm -rf $1/product/priv-app/WellbeingPrebuilt
 rm -rf $1/product/app/Music2
 rm -rf $1/product/app/Photos
 rm -rf $1/product/app/Videos
+rm -rf $1/product/priv-app/AmbientSensePrebuilt
+rm -rf $1/product/priv-app/GoogleCamera
+rm -rf $1/product/priv-app/CarrierServices
+rm -rf $1/system_ext/priv-app/GoogleFeedback
+rm -rf $1/system_ext/priv-app/PixelNfc
+rm -rf $1/app/NfcNci
+rm -rf $1/system_ext/priv-app/YadaYada
+# Hotword
+rm -rf $1/product/priv-app/HotwordEnrollment*
+rm -rf $1/system_ext/framework/com.android.hotwordenrollment*
+rm -rf $1/system_ext/framework/oat/arm/com.android.hotwordenrollment*
+rm -rf $1/system_ext/framework/oat/arm64/com.android.hotwordenrollment*
+
+# More debloat
+rm -rf $1/priv-app/TagGoogle
+rm -rf $1/product/app/VZWAPNLib
+rm -rf $1/product/priv-app/AndroidAutoStubPrebuilt
+rm -rf $1/product/priv-app/DreamlinerPrebuilt
+rm -rf $1/product/priv-app/DreamlinerUpdater
+rm -rf $1/system_ext/priv-app/HbmSVManager

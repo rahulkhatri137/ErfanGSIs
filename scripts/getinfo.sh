@@ -32,10 +32,6 @@ printf "Android Version: $release
 Brand: $brand
 Model: $model
 Codename: $codename
-Build Type: $flavor
-Build Number: $id
-Incremental: $incremental
-Tags: $tags
 Security Patch: $spl
 Fingerprint: $fingerprint
 Description: $description

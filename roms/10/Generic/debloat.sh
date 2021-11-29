@@ -1,7 +1,6 @@
 #!/bin/bash
 
 rm -rf $1/product/app/CalendarGoogle
-rm -rf $1/product/app/GoogleContacts
 rm -rf $1/product/app/GoogleOne
 rm -rf $1/recovery-from-boot.p
 rm -rf $1/product/priv-app/Wellbeing

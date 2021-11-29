@@ -47,5 +47,5 @@ for CLASS in $CLASSES; do
 done
 
 # This should not happen
-echo "ERR: Patching Light not supported for this rom"
+echo "ERR: Patching Light not supported for this rom" > /dev/null 2>&1
 rm -rf "$TMPDIR"

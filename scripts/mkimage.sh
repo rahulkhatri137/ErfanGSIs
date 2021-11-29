@@ -82,6 +82,9 @@ if [[ -f "$tempdir/file_contexts" ]]; then
     echo "/logcat                 u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
     echo "/preload                u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
     echo "/elabel                 u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
+    echo "/tranfs                 u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
+    echo "/acct                   u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
+    echo "/bin                    u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
     if [ ! "$build" == false ]; then
         if [ -f "$build/file_contexts" ]; then
             cat "$build/file_contexts" >> "$tempdir/file_contexts"

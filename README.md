@@ -1,5 +1,7 @@
 ## Requirements
     Linux or Mac
+Warning: This fork came through VeloshGSIs, originally ErfanGSIs.
+You can edit the tool but read the NOTICE/LICENSE!
 
 ## Released GSIs (ErfanGSIs)
 Download link: https://mirrors.lolinet.com/firmware/gsi/  
@@ -7,13 +9,10 @@ XDA thread: https://forum.xda-developers.com/project-treble/trebleenabled-device
 Telegram group: https://t.me/ErfanGSIs  
 Telegram channel: https://t.me/ErfanGSI  
 
-## Released GSIs (TrebleExperience)
-[![Download Treble Experience | GSI](https://img.shields.io/sourceforge/dm/trebleexperience.svg)](https://sourceforge.net/projects/trebleexperience/files/latest/download)
-[![Download Treble Experience | GSI](https://img.shields.io/sourceforge/dt/trebleexperience.svg)](https://sourceforge.net/projects/trebleexperience/files/latest/download)
-[![Download Treble Experience | GSI](https://img.shields.io/sourceforge/dd/trebleexperience.svg)](https://sourceforge.net/projects/trebleexperience/files/latest/download)  
-SourceForge link: https://sourceforge.net/projects/trebleexperience/  
-Telegram group: https://t.me/TrebleExperience_chat  
-Telegram channel: https://t.me/TrebleExperience
+## Released GSIs (RK137)
+SourceForge link: https://sourceforge.net/projects/gsis137/  
+Telegram group: https://t.me/oemportingchannel 
+Telegram channel: https://t.me/rk137gsis
 
 # First steps
 
@@ -35,7 +34,6 @@ sudo bash https://bigota.d.miui.com/V12.5.4.0.RCUMIXM/miui_BILOBAGlobal_V12.5.4.
 
 ## Note
 * If you are going to edit the fork, please respect the License and NOTICE!
-* I won't push anything to this repo anymore, this repository is archived.
 
 ## Tips
 * Use our [Bo³+t](https://github.com/TrebleExperience/Bot3) fork if you want a telegram bot which is supported and adapted to our ErfanGSI fork.

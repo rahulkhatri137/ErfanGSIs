@@ -5,16 +5,13 @@
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 AB=true
-AONLY=true
+AONLY=false
 MOUNTED=false
 NOVNDK=false
-CLEAN=false
+CLEAN=true
 DYNAMIC=false
 LOCK="$PROJECT_DIR/cache/.lock"
 DL="${PROJECT_DIR}/scripts/downloaders/dl.sh"
-
-echo "-> Warning: This fork came through VeloshGSIs, originally ErfanGSIs."
-echo " - You can edit the tool but read the NOTICE/LICENSE!"
 
 if [ $(uname) == Darwin ]; then
     echo "-> Darwin is no longer supported."
@@ -27,12 +24,12 @@ if [ "${EUID}" -ne 0 ]; then
 fi
 
 if [ -f "$LOCK" ]; then
-    echo "-> Stop, wait for the other job to finish before you can start another one."
+    echo "-> Stop, wait for the other job to finish."
     exit 1
 else
     mkdir -p "$PROJECT_DIR/cache/"
     touch "$LOCK"
-    echo "-> Making patch: Cleaning and removing folders that are used to make GSI to avoid problems"
+    echo "-> Making patch: Cleaning!"
     if [ -d "$PROJECT_DIR/working/system/" ]; then
         sudo umount "$PROJECT_DIR/working/system/" > /dev/null 2>&1
     fi
@@ -123,7 +120,7 @@ DOWNLOAD()
 {
     URL="$1"
     ZIP_NAME="$2"
-    echo "-> Downloading firmware to: $ZIP_NAME"
+    echo "-> Downloading firmware..."
     if echo "${URL}" | grep -q "mega.nz\|mediafire.com\|drive.google.com"; then
         ("${DL}" "${URL}" "$PROJECT_DIR/input" "$ACTUAL_ZIP_NAME") || exit 1
     else
@@ -139,9 +136,9 @@ MOUNT()
 {
     mkdir -p "$PROJECT_DIR/working/$2"
     if `sudo mount -o ro "$PROJECT_DIR/working/$1" "$PROJECT_DIR/working/$2" > /dev/null 2>&1`; then
-        echo "-> $3 image successfully mounted"
+    echo "-> $3 image successfully mounted" > /dev/null 2>&1
     elif `sudo mount -o loop "$PROJECT_DIR/working/$1" "$PROJECT_DIR/working/$2" > /dev/null 2>&1`; then
-        echo "-> $3 image successfully mounted"
+    echo "-> $3 image successfully mounted" > /dev/null 2>&1
     else
         # If it fails again, abort
         echo "-> Failed to mount $3 image, try to check this manually"
@@ -216,5 +213,7 @@ fi
 UMOUNT "$PROJECT_DIR/working/system"
 UMOUNT "$PROJECT_DIR/working/vendor" > /dev/null 2>&1
 rm -rf "$PROJECT_DIR/working"
+mv $PROJECT_DIR/output/*-System-Tree.txt $PROJECT_DIR/output/System-Tree.txt 
+mv $PROJECT_DIR/output/*-RK137GSI.txt $PROJECT_DIR/output/build-info.txt 
 
-echo "-> Porting ${SRCTYPENAME} GSI done on: $PROJECT_DIR/output"
+echo "-> Porting ${SRCTYPENAME} GSI done!"
