@@ -188,7 +188,7 @@ if [[ ! -f "$systemdir/system/lib64/libandroid.so" ]]; then
 fi
 
 # Init date var first
-date=`date +%Y%m%d%s`
+date=`date +%Y%m%d`
 
 # Get codename & Build Number
 if [[ $(grep "ro.build.display.id" $systemdir/system/build.prop) ]]; then
@@ -208,7 +208,8 @@ codename=$(grep -oP "(?<=^ro.product.vendor.device=).*" -hs "$LOCALDIR/working/v
 [[ -z "${codename}" ]] && codename=Generic
 
 #Out Variable
-outputname="$romtypename-$outputtype-$sourcever-$date-$codename-RK137GSI"
+ioutputname="$romtypename-$outputtype-$sourcever-$date-$codename-RK137GSI"
+outputname="$romtypename-$sourcever-$date-$codename-RK137GSI"
 
 # System tree thing
 outputtreename="System-Tree-$outputname".txt
@@ -238,7 +239,7 @@ $builddir/debloat/$sourcever/debloat.sh "$systemdir/system" 2>/dev/null # "Commo
 echo "-> Patching started..."
 $scriptsdir/fixsymlinks.sh "$systemdir/system" 2>/dev/null
 $scriptsdir/nukeABstuffs.sh "$systemdir/system" 2>/dev/null
-$builddir/patches/common/make.sh "$systemdir/system" "$romsdir/$sourcever/$romtype" "$sourcever"
+$builddir/patches/common/make.sh "$systemdir/system" "$romsdir/$sourcever/$romtype" "$sourcever" >/dev/null 2>&1
 
 # Check if extra VNDK has been requested
 if [[ $novndk == "false" ]]; then
@@ -249,9 +250,9 @@ else
 fi
 
 # Patching moment
-$builddir/gsi/$sourcever/make.sh "$systemdir/system" "$romsdir/$sourcever/$romtype" 2>/dev/null
-$builddir/gsi/$sourcever/makeroot.sh "$systemdir" "$romsdir/$sourcever/$romtype" 2>/dev/null
-$builddir/gsi/common/make.sh "$systemdir/system" "$romsdir/$sourcever/$romtype" 2>/dev/null
+$builddir/gsi/$sourcever/make.sh "$systemdir/system" "$romsdir/$sourcever/$romtype" >/dev/null 2>&1
+$builddir/gsi/$sourcever/makeroot.sh "$systemdir" "$romsdir/$sourcever/$romtype" >/dev/null 2>&1
+$builddir/gsi/common/make.sh "$systemdir/system" "$romsdir/$sourcever/$romtype" >/dev/null 2>&1
 [[ -f $LOCALDIR/tmp/FATALERROR ]] && exit 1
 $romsdir/$sourcever/$romtype/make.sh "$systemdir/system" 2>/dev/null
 $romsdir/$sourcever/$romtype/makeroot.sh "$systemdir" 2>/dev/null
@@ -294,7 +295,7 @@ if [ "$outputtype" == "Aonly" ]; then
 fi
 
 # Out info
-outputimagename="$outputname".img
+outputimagename="$ioutputname".img
 outputtextname="Build-info-$outputname".txt
 outputvendoroverlaysname="VendorOverlays-$outputname".tar.gz
 outputodmoverlaysname="ODMOverlays-$outputname".tar.gz

@@ -260,4 +260,4 @@ sudo rm -rf "$PROJECT_DIR/cache/" "$PROJECT_DIR/tmp/" "$PROJECT_DIR/working/" "$
 chown -R ${USERNAME}:${USERNAME} $PROJECT_DIR/output
 
 # Done message
-echo "-> Porting GSI done!" | sed "s/-/ /g"
+echo "-> Porting GSI done!"

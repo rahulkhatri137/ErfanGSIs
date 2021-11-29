@@ -179,7 +179,7 @@ if [[ $(7z l -ba "$romzip" | grep system.new.dat) ]]; then
                 rm -rf "$i"
             fi
             if [[ $(echo "$i" | grep "\.dat\.br") ]]; then
-                echo "-> Converting brotli $partition dat to normal"
+                echo "-> Converting brotli $partition dat to normal" >/dev/null 2>&1
                 $brotli_exec -d "$i"
                 rm -f "$i"
             fi
