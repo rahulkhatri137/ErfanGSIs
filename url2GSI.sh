@@ -213,7 +213,5 @@ fi
 UMOUNT "$PROJECT_DIR/working/system"
 UMOUNT "$PROJECT_DIR/working/vendor" > /dev/null 2>&1
 rm -rf "$PROJECT_DIR/working"
-mv $PROJECT_DIR/output/*-System-Tree.txt $PROJECT_DIR/output/System-Tree.txt 
-mv $PROJECT_DIR/output/*-RK137GSI.txt $PROJECT_DIR/output/build-info.txt 
 
-echo "-> Porting ${SRCTYPENAME} GSI done!"
+echo "-> Porting GSI done!"
