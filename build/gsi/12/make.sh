@@ -73,7 +73,7 @@ fi
 
 # Copy navigation bar aosp overlays
 if [ -f $romdir/NOAOSPOVERLAY ]; then
-    echo "-> Using AOSP overlays isn't supported in this rom. Skipping..."
+    echo "-> Using AOSP overlays isn't supported in this rom. Skipping..." > /dev/null 2>&1
 else
     cp -fpr $thispath/aosp_overlay/* $1/product/overlay/
 fi

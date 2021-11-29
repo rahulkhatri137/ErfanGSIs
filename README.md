@@ -2,15 +2,24 @@
 
 ![Android Background](https://i.imgur.com/gDeUsDm_d.webp?maxwidth=760&fidelity=grand)
 
+Note: This fork is derived from YuMiGSIs/VeloshGSIs, the predecessor of the old TrebleExperience foundation (2019-2020, VegaGSIs), originally ErfanGSIs.
 Any bugs, problems or the like must be reported. If you are going to fork or clone this repository, no support will be given.
 
+## Released GSIs (RK137GSI)
+[![Download RK137 | GSI](https://img.shields.io/sourceforge/dm/gsis137.svg)](https://sourceforge.net/projects/gsis137/files/latest/download)
+[![Download RK137 | GSI](https://img.shields.io/sourceforge/dt/gsis137.svg)](https://sourceforge.net/projects/gsis137/files/latest/download)
+[![Download RK137 | GSI](https://img.shields.io/sourceforge/dd/gsis137.svg)](https://sourceforge.net/projects/gsis137/files/latest/download)  
+SourceForge link: https://sourceforge.net/projects/gsis137/
+Telegram channel: https://t.me/rk137gsi
+
 ## Released GSIs (TrebleExperience)
-[![Download Treble Experience | GSI](https://img.shields.io/sourceforge/dm/trebleexperience.svg)](https://sourceforge.net/projects/trebleexperience/files/latest/download)
-[![Download Treble Experience | GSI](https://img.shields.io/sourceforge/dt/trebleexperience.svg)](https://sourceforge.net/projects/trebleexperience/files/latest/download)
-[![Download Treble Experience | GSI](https://img.shields.io/sourceforge/dd/trebleexperience.svg)](https://sourceforge.net/projects/trebleexperience/files/latest/download)  
-SourceForge link: https://sourceforge.net/projects/trebleexperience/  
-Telegram group: https://t.me/TrebleExperience_chat  
+SourceForge link: https://sourceforge.net/projects/trebleexperience/ 
 Telegram channel: https://t.me/TrebleExperience
+
+## Released GSIs (ErfanGSIs)
+Download link: https://mirrors.lolinet.com/firmware/gsi/  
+XDA thread: https://forum.xda-developers.com/project-treble/trebleenabled-device-development/pie-erfan-gsi-ports-t3906486
+Telegram channel: https://t.me/ErfanGSI
 
 # First steps
 
@@ -32,7 +41,6 @@ sudo bash https://bigota.d.miui.com/V12.5.4.0.RCUMIXM/miui_BILOBAGlobal_V12.5.4.
 
 ## Note
 * If you are going to edit the fork, please respect the License and NOTICE!
-* At the short period of less than 12 months, Project Treble Experience (from the second foundation), is shutting down its activities. I'll not pass the leadership of the project to anyone (as it was initially supposed to start and end with me as owner/first founder of the second and last foundation), nor to Hitalo, the first founder of the first Project Treble Experience, you're free to do whatever you want with this source code, just remember to give the credits to all contributors, helpers & etc. In my opinion, the second foundation should never have existed, YuMi GSIs was the main and rising but unfortunately bad natured people destroyed my project. Well, I've nothing to say, be happy and live well, if you are going to help others, please take care of yourself.
 
 ## Tips
 * Use our [Bo³+t](https://github.com/TrebleExperience/Bot3) fork if you want a telegram bot which is supported and adapted to our ErfanGSI fork.
@@ -50,4 +58,5 @@ sudo bash https://bigota.d.miui.com/V12.5.4.0.RCUMIXM/miui_BILOBAGlobal_V12.5.4.
 * Xiaoxindada
 * GSI Tutorials
 * Nippon
+* Treble Experience
 * See other [contributors](https://github.com/TrebleExperience/ErfanGSIs-TrebleExperience/graphs/contributors) here.

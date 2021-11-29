@@ -41,8 +41,8 @@ fi
 
 # Some systems are using custom light services, don't apply this patch on those roms
 if [ -f $romdir/DONTPATCHLIGHT ]; then
-    echo "-> Patching lights for brightness fix is not supported in this rom. Skipping..."
+    echo "-> Patching lights for brightness fix is not supported in this rom. Skipping..." > /dev/null 2>&1
 else
-    echo "-> Start Patching Light Services for Brightness Fix..."
+    echo "-> Start Patching Light Services for Brightness Fix..." > /dev/null 2>&1
     $thispath/brightnessfix/make.sh "$systempath"
 fi

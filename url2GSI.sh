@@ -6,11 +6,11 @@
 # Core variables, do not edit.
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 AB=true
-AONLY=true
+AONLY=false
 MOUNTED=false
 NOVNDK=false
 GAPPS=false
-CLEAN=false
+CLEAN=true
 MERGE=false
 
 # Check for partitions to validate if the merger usage is needed
@@ -37,10 +37,6 @@ if [ "${EUID}" -ne 0 ]; then
     exit 1
 fi
 
-# Welcome Message
-echo "-> Note: This fork is derived from VeloshGSIs, the predecessor of the old TrebleExperience foundation (2019-2020, VegaGSIs)."
-echo " - This branch is private, the public repository is available on TrebleExperience's GitHub."
-
 # Util functions
 usage() {
     echo "Usage: [--help|-h|-?] [--ab|-b] [--aonly|-a] [--cleanup|-c] [--merge|-m] [--no-vndks|-nv] [--gapps|-g] $0 <Firmware link> <Firmware type> [Other args]"
@@ -58,7 +54,7 @@ usage() {
 DOWNLOAD() {
     URL="$1"
     ZIP_NAME="$2"
-    echo "-> Downloading firmware to: $ZIP_NAME"
+    echo "-> Downloading firmware..."
     if echo "${URL}" | grep -q "mega.nz\|mediafire.com\|drive.google.com"; then
         ("${DL}" "${URL}" "$PROJECT_DIR/input" "$ACTUAL_ZIP_NAME") || exit 1
     else
@@ -73,15 +69,15 @@ DOWNLOAD() {
 MOUNT() {
     mkdir -p "$PROJECT_DIR/working/$2"
     if $(sudo mount -o auto -t auto "$PROJECT_DIR/working/$1" "$PROJECT_DIR/working/$2" >/dev/null 2>&1); then
-        echo "-> $3 image successfully mounted"
+        echo "-> $3 image successfully mounted"  >/dev/null 2>&1
     elif $(sudo mount -o ro -t erofs "$PROJECT_DIR/working/$1" "$PROJECT_DIR/working/$2" >/dev/null 2>&1); then
-        echo "-> $3 image successfully mounted with Enhanced Read-Only File System"
+        echo "-> $3 image successfully mounted with Enhanced Read-Only File System"  >/dev/null 2>&1
     elif $(sudo mount -o loop -t erofs "$PROJECT_DIR/working/$1" "$PROJECT_DIR/working/$2" >/dev/null 2>&1); then
-        echo "-> $3 image successfully mounted with Enhanced Read-Only File System"
+        echo "-> $3 image successfully mounted with Enhanced Read-Only File System"  >/dev/null 2>&1
     elif $(sudo mount -o loop "$PROJECT_DIR/working/$1" "$PROJECT_DIR/working/$2" >/dev/null 2>&1); then
-        echo "-> $3 image successfully mounted"
+        echo "-> $3 image successfully mounted"  >/dev/null 2>&1
     elif $(sudo mount -o ro "$PROJECT_DIR/working/$1" "$PROJECT_DIR/working/$2" >/dev/null 2>&1); then
-        echo "-> $3 image successfully mounted"
+        echo "-> $3 image successfully mounted"  >/dev/null 2>&1
     else
         # If it fails again, abort
         echo "-> Failed to mount $3 image, try to check this manually, abort."
@@ -121,14 +117,14 @@ else
     mkdir -p "$PROJECT_DIR/cache/"
     touch "$LOCK"
     if [ ! -d "$1" ]; then
-        echo "-> Warning: Unmounting all partitions inside working folder, deleting all temporary folders/files which are used to do GSI process..."
+        echo "-> Warning: Unmounting all partitions inside working folder, deleting all temporary folders/files which are used to do GSI process..."  >/dev/null 2>&1
         UMOUNT_ALL
         sudo rm -rf "$PROJECT_DIR/working/"
     fi
     sudo rm -rf "$PROJECT_DIR/output/" "$PROJECT_DIR/cache/" "$PROJECT_DIR/tmp/"  "$PROJECT_DIR/tools/ROM_resigner/tmp/"
     sudo find . -type d -name "__pycache__" -exec rm -rf {} +
     sudo find . -type f -name "*.pyc" -exec rm -rf {} +
-    echo " - Done."
+    echo " - Done."  >/dev/null 2>&1
 fi
 
 # Get the args
@@ -251,7 +247,7 @@ if [ -d "$PROJECT_DIR/tools/ROM_resigner/tmp/" ]; then
    sudo rm -rf "$PROJECT_DIR/tools/ROM_resigner/tmp/"
 fi
 
-# GSI process (AB)
+# GSI process (A)
 if [ $AONLY == true ]; then
     "$PROJECT_DIR"/make.sh "${URL}" "${SRCTYPE}" Aonly ${NOVNDK} ${GAPPS} "$PROJECT_DIR/output" ${@} || LEAVE
 fi
@@ -264,4 +260,4 @@ sudo rm -rf "$PROJECT_DIR/cache/" "$PROJECT_DIR/tmp/" "$PROJECT_DIR/working/" "$
 chown -R ${USERNAME}:${USERNAME} $PROJECT_DIR/output
 
 # Done message
-echo " > Done, ${SRCTYPENAME} ROM successfully ported, wait for Bo³+t to finish the process." | sed "s/-/ /g"
+echo "-> Porting GSI done!" | sed "s/-/ /g"
