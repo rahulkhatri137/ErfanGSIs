@@ -157,8 +157,17 @@ fi
 # Init date var first
 date=`date +%Y%m%d`
 
-# Debloat thing
-outputtreename="$romtypename-$sourcever-$date-System-Tree.txt"
+#CodeName
+codename=$(grep -oP "(?<=^ro.product.vendor.device=).*" -hs "$LOCALDIR/working/vendor/build.prop" | head -1)
+[[ -z "${codename}" ]] && codename=$(grep -oP "(?<=^ro.product.system.device=).*" -hs $systemdir/system/build.prop | head -1)
+[[ -z "${codename}" ]] && codename=$(grep -oP "(?<=^ro.product.device=).*" -hs $systemdir/system/build.prop | head -1)
+[[ -z "${codename}" ]] && codename=Generic
+
+#Out Variable
+outputname="$romtypename-$outputtype-$sourcever-$date-$codename-RK137GSI"
+
+# System tree thing
+outputtreename="System-Tree-$outputname".txt
 outputtree="$outdir/$outputtreename"
 
 if [ ! -f "$outputtree" ]; then
@@ -224,12 +233,11 @@ if [ "$outputtype" == "Aonly" ]; then
     fi
 fi
 
-# Init out overlay
-outputname="$romtypename-$outputtype-$sourcever-$date-RK137GSI"
+# Out info
 outputimagename="$outputname".img
-outputtextname="$outputname".txt
-outputvendoroverlaysname="$romtypename-$sourcever-$date-VendorOverlays.tar.gz"
-outputodmoverlaysname="$romtypename-$sourcever-$date-ODMOverlays.tar.gz"
+outputtextname="Build-info-$outputname".txt
+outputvendoroverlaysname="VendorOverlays-$outputname".tar.gz
+outputodmoverlaysname="ODMOverlays-$outputname".tar.gz
 output="$outdir/$outputimagename"
 outputvendoroverlays="$outdir/$outputvendoroverlaysname"
 outputodmoverlays="$outdir/$outputodmoverlaysname"
