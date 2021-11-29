@@ -164,8 +164,8 @@ codename=$(grep -oP "(?<=^ro.product.vendor.device=).*" -hs "$LOCALDIR/working/v
 [[ -z "${codename}" ]] && codename=Generic
 
 #Out Variable
-outputname="$romtypename-$outputtype-$sourcever-$date-$codename-RK137GSI"
-
+outputname="$romtypename-$sourcever-$date-$codename-RK137GSI"
+ioutputname="$romtypename-$outputtype-$sourcever-$date-$codename-RK137GSI"
 # System tree thing
 outputtreename="System-Tree-$outputname".txt
 outputtree="$outdir/$outputtreename"
@@ -234,7 +234,7 @@ if [ "$outputtype" == "Aonly" ]; then
 fi
 
 # Out info
-outputimagename="$outputname".img
+outputimagename="$ioutputname".img
 outputtextname="Build-info-$outputname".txt
 outputvendoroverlaysname="VendorOverlays-$outputname".tar.gz
 outputodmoverlaysname="ODMOverlays-$outputname".tar.gz
@@ -286,7 +286,7 @@ OUTPUT_IMAGE="$PROJECT_DIR/output/$outputimagename"
 
 if [ -f "$OUTPUT_IMAGE" ]; then
    # Builded
-   echo "-> Created image ($outputtype): $outputimagename | Size: $(bytesToHuman $systemsize)"
+   echo "-> Created image $outputimagename | Size: $(bytesToHuman $systemsize)"
 else
    # Oops... Error found
    echo "-> Error: Output image doesn't exists!"
