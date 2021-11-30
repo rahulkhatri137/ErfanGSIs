@@ -82,9 +82,6 @@ if [[ -f "$tempdir/file_contexts" ]]; then
     echo "/logcat                 u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
     echo "/preload                u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
     echo "/elabel                 u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
-    echo "/tranfs                 u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
-    echo "/acct                   u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
-    echo "/bin                    u:object_r:rootfs:s0" >> "$tempdir/file_contexts"
     if [ ! "$build" == false ]; then
         if [ -f "$build/file_contexts" ]; then
             cat "$build/file_contexts" >> "$tempdir/file_contexts"
@@ -118,14 +115,14 @@ sudo mkdir -p "$systemdir/cache"
 
 if [ "$6" == "--old" ]; then
     if [ "$outputtype" == "Aonly" ]; then
-        sudo $make_ext4fs -T 0 -S $fcontexts -l $syssize -L system -a system -s "$output" "$systemdir/system"
+        sudo $make_ext4fs -T 1230768000 -I "256" -j "0" -S $fcontexts -l $syssize -L system -a system -s "$output" "$systemdir/system"
     else
-        sudo $make_ext4fs -T 0 -S $fcontexts -l $syssize -L / -a / -s "$output" "$systemdir/"
+        sudo $make_ext4fs -T 1230768000 -I "256" -j "0" -S $fcontexts -l $syssize -L / -a / -s "$output" "$systemdir/"
     fi
 else
     if [ "$outputtype" == "Aonly" ]; then
-        sudo $toolsdir/mkuserimg_mke2fs.sh -s "$systemdir/system" "$output" ext4 system $syssize -T 0 -L system $fcontexts
+        sudo $toolsdir/mkuserimg_mke2fs.py "$systemdir/system" "$output" ext4 "/system" $syssize $fcontexts -j "0" -T "1230768000" -L "system" -I "256" -M "/system" -m "0"
     else
-        sudo $toolsdir/mkuserimg_mke2fs.sh -s "$systemdir/" "$output" ext4 / $syssize -T 0 -L / $fcontexts
+        sudo $toolsdir/mkuserimg_mke2fs.py "$systemdir/" "$output" ext4 "/" $syssize $fcontexts -j "0" -T "1230768000" -L "/" -I "256" -M "/" -m "0"
     fi
 fi

@@ -2,9 +2,9 @@
 
 systempath=$1
 LOCALDIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-scriptsdir=$LOCALDIR/../../../scripts
-toolsdir=$LOCALDIR/../../../tools
-TMPDIR=$LOCALDIR/../../../tmp/brightnessfix
+scriptsdir=$LOCALDIR/../../../../scripts
+toolsdir=$LOCALDIR/../../../../tools
+TMPDIR=$LOCALDIR/../../../../tmp/brightnessfix
 mkdir -p "$TMPDIR"
 
 BAKSMALIJAR="$toolsdir"/smali/baksmali.jar
@@ -47,5 +47,5 @@ for CLASS in $CLASSES; do
 done
 
 # This should not happen
-echo "ERR: Patching Light not supported for this rom" > /dev/null 2>&1
+echo "ERR: Patching Light not supported for this rom"
 rm -rf "$TMPDIR"
