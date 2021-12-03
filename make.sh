@@ -360,6 +360,3 @@ fi
 if [ -f "$LOCALDIR/output/.otmp" ]; then
     mv "$LOCALDIR/output/.otmp" "$outputodmoverlays"
 fi
-
-echo "-> Done! Delete temporary folder." >/dev/null 2>&1
-rm -rf "$tempdir"
