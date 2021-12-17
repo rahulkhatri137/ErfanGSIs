@@ -213,5 +213,10 @@ fi
 UMOUNT "$PROJECT_DIR/working/system"
 UMOUNT "$PROJECT_DIR/working/vendor" > /dev/null 2>&1
 rm -rf "$PROJECT_DIR/working"
+rm -rf "$PROJECT_DIR/imput"
+rm -rf "$PROJECT_DIR/tmp"
+
+cd "$PROJECT_DIR/output"
+cp -fr B*txt README.txt > /dev/null 2>&1 || LEAVE
 
 echo "-> Porting GSI done!"
