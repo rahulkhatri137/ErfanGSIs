@@ -41,8 +41,8 @@ def FindBinaryPath(binary):
     binary_path = os.path.join(path, binary)
     if os.path.exists(binary_path):
       return binary_path
-  raise Exception('Failed to find binary ' + binary + ' in path ' +
-                  ':'.join(tool_path_list))
+  raise Exception(
+      (f'Failed to find binary {binary} in path ' + ':'.join(tool_path_list)))
 
 
 def RunCommand(cmd, verbose=False, env=None, expected_return_values=None):
@@ -85,9 +85,7 @@ def RunCompress(args, work_dir):
   global tool_path_list
   tool_path_list = args.apex_compression_tool_path
 
-  cmd = ['soong_zip']
-  cmd.extend(['-o', args.output])
-
+  cmd = ['soong_zip', *['-o', args.output]]
   # We want to put the input apex inside the compressed APEX with name
   # "original_apex". So we create a hard link and put the renamed file inside
   # the zip

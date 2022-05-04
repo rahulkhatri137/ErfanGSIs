@@ -187,8 +187,8 @@ def FindBinaryPath(binary):
     binary_path = os.path.join(path, binary)
     if os.path.exists(binary_path):
       return binary_path
-  raise Exception('Failed to find binary ' + binary + ' in path ' +
-                  ':'.join(tool_path_list))
+  raise Exception(
+      (f'Failed to find binary {binary} in path ' + ':'.join(tool_path_list)))
 
 
 def RunCommand(cmd, verbose=False, env=None, expected_return_values={0}):
@@ -224,10 +224,7 @@ def GetDirSize(dir_name):
 
 
 def GetFilesAndDirsCount(dir_name):
-  count = 0
-  for root, dirs, files in os.walk(dir_name):
-    count += (len(dirs) + len(files))
-  return count
+  return sum((len(dirs) + len(files)) for root, dirs, files in os.walk(dir_name))
 
 
 def RoundUp(size, unit):
@@ -300,7 +297,7 @@ def ValidateArgs(args):
     return False
 
   if not args.force and os.path.exists(args.output):
-    print(args.output + ' already exists. Use --force to overwrite.')
+    print(f'{args.output} already exists. Use --force to overwrite.')
     return False
 
   if args.unsigned_payload_only:
@@ -322,39 +319,33 @@ def ValidateArgs(args):
         return False
 
     if not args.canned_fs_config:
-      if not args.canned_fs_config:
-        if build_info is not None:
-          with tempfile.NamedTemporaryFile(delete=False) as temp:
-            temp.write(build_info.canned_fs_config)
-            args.canned_fs_config = temp.name
-        else:
-          print('Missing ----canned_fs_config {config} argument, or a --build_info argument!')
-          return False
+      if build_info is not None:
+        with tempfile.NamedTemporaryFile(delete=False) as temp:
+          temp.write(build_info.canned_fs_config)
+          args.canned_fs_config = temp.name
+      else:
+        print('Missing ----canned_fs_config {config} argument, or a --build_info argument!')
+        return False
 
-  if not args.target_sdk_version:
-    if build_info is not None:
-      if build_info.target_sdk_version:
-        args.target_sdk_version = build_info.target_sdk_version
+  if (not args.target_sdk_version and build_info is not None
+      and build_info.target_sdk_version):
+    args.target_sdk_version = build_info.target_sdk_version
 
-  if not args.no_hashtree:
-    if build_info is not None:
-      if build_info.no_hashtree:
-        args.no_hashtree = True
+  if (not args.no_hashtree and build_info is not None
+      and build_info.no_hashtree):
+    args.no_hashtree = True
 
-  if not args.min_sdk_version:
-    if build_info is not None:
-      if build_info.min_sdk_version:
-        args.min_sdk_version = build_info.min_sdk_version
+  if (not args.min_sdk_version and build_info is not None
+      and build_info.min_sdk_version):
+    args.min_sdk_version = build_info.min_sdk_version
 
-  if not args.override_apk_package_name:
-    if build_info is not None:
-      if build_info.override_apk_package_name:
-        args.override_apk_package_name = build_info.override_apk_package_name
+  if (not args.override_apk_package_name and build_info is not None
+      and build_info.override_apk_package_name):
+    args.override_apk_package_name = build_info.override_apk_package_name
 
-  if not args.logging_parent:
-    if build_info is not None:
-      if build_info.logging_parent:
-        args.logging_parent = build_info.logging_parent
+  if (not args.logging_parent and build_info is not None
+      and build_info.logging_parent):
+    args.logging_parent = build_info.logging_parent
 
   return True
 
@@ -449,7 +440,7 @@ def CreateApex(args, work_dir):
 
   def copyfile(src, dst):
     if args.verbose:
-      print('Copying ' + src + ' to ' + dst)
+      print(f'Copying {src} to {dst}')
     shutil.copyfile(src, dst)
 
   try:

@@ -64,14 +64,14 @@ class DZStruct(object):
 		Pack all the fields from the dict into a returned buffer
 		"""
 
-		dout = dict()
+		dout = {}
 
 		# pad any string keys that need padding
 		for k in self._dz_format_dict.keys():
 			if self._dz_format_dict[k][0][-1] == 's':
 				l = int(self._dz_format_dict[k][0][:-1])
 				dout[k] = (din[k] if k in din else b"").ljust(l, b'\x00')
-			elif not k in din and k in self._dz_collapsibles:
+			elif k not in din and k in self._dz_collapsibles:
 				dout[k] = 0
 			else:
 				dout[k] = din[k]
@@ -79,9 +79,7 @@ class DZStruct(object):
 		dout['header'] = self._dz_header
 
 		values = [dout[k] for k in self._dz_format_dict.keys()]
-		buffer = self._dz_struct.pack(*values)
-
-		return buffer
+		return self._dz_struct.pack(*values)
 
 
 	def unpackdict(self, buffer):

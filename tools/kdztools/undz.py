@@ -61,7 +61,7 @@ class UNDZUtils(object):
 
 
                 # Verify DZ area header
-                if dz_item == None:
+                if dz_item is None:
                         print("[!] Bad DZ {:s} header!".format(self._dz_area), file=sys.stderr)
                         sys.exit(1)
 
@@ -75,8 +75,8 @@ class UNDZUtils(object):
                         if type(dz_item[key]) is str or type(dz_item[key]) is bytes:
                                 dz_item[key] = dz_item[key].rstrip(b'\x00')
                                 if b'\x00' in dz_item[key]:
-                                        print("[!] Warning: extraneous data found IN "+key, file=sys.stderr)
-                                        #sys.exit(1)
+                                        print(f"[!] Warning: extraneous data found IN {key}", file=sys.stderr)
+                                                                #sys.exit(1)
                         elif type(dz_item[key]) is int:
                                 if dz_item[key] != 0:
                                         print('[!] Error: Value supposed to be zero in field "'+key+'" is non-zero ('+hex(dz_item[key])+')', file=sys.stderr)
@@ -463,7 +463,7 @@ class UNDZSlice(object):
 
 
                 # write a params file for saving values used during recreate
-                params = io.open(name + ".params", "wt")
+                params = io.open(f"{name}.params", "wt")
                 params.write(u'# saved parameters for the file "{:s}"\n'.format(name))
                 params.write(u"startLBA={:d}\n".format(start >> self.dz.shiftLBA))
                 params.write(u"startAddr={:d}\n".format(start))
@@ -656,12 +656,23 @@ class UNDZFile(dz.DZFile, UNDZUtils):
 
                         for i in range(len(g.slices)):
                                 if next != g.slices[i].startLBA:
-                                        print("[!] Unallocated space found. Slice, Start, Size, End: " + str(next) + " " + str((g.slices[i].startLBA - next)<<self.shiftLBA), next<<self.shiftLBA, (g.slices[i].startLBA-1)<<self.shiftLBA)
+                                        print(
+                                            f"[!] Unallocated space found. Slice, Start, Size, End: {str(next)} {str((g.slices[i].startLBA - next)<<self.shiftLBA)}",
+                                            next << self.shiftLBA,
+                                            (g.slices[i].startLBA - 1) <<
+                                            self.shiftLBA,
+                                        )
                                         emptycount += 1
                                 next = g.slices[i].endLBA+1
 
                         if next != g.dataEndLBA+1:
-                                new = UNDZSlice(self, None, "_unallocated_" + str(emptycount), next<<self.shiftLBA, g.dataEndLBA<<self.shiftLBA)
+                                new = UNDZSlice(
+                                    self,
+                                    None,
+                                    f"_unallocated_{str(emptycount)}",
+                                    next << self.shiftLBA,
+                                    g.dataEndLBA << self.shiftLBA,
+                                )
                                 self.slices.append(new)
                                 emptycount += 1
                                 next = g.dataEndLBA+1
@@ -672,8 +683,6 @@ class UNDZFile(dz.DZFile, UNDZUtils):
 
                 except gpt.NoGPT as err:
                         print("[!] Unable to find GPT in DZ file: {:s}".format(err))
-                        pass
-
                 for chunk in self.chunks:
                         self.addChunk(chunk)
 
@@ -697,39 +706,6 @@ class UNDZFile(dz.DZFile, UNDZUtils):
 
                 # these are speculative, disabled for others
                 return 0
-                # Other speculation
-                md5HeaderNZ = self.md5HeaderNZ.digest()
-
-                if md5HeaderNZ == self.unknown2:
-                        self.messages.add("[ ] unknown2 is consistent with MD5 of non-zero header areas")
-                else:
-                        self.messages.add("[ ] MD5 of non-zero header areas not found ({:32s})".format(self.md5HeaderNZ.hexdigest()))
-
-
-                self.crcHeaders = self.crcHeaders & 0xFFFFFFFF
-                if self.crcHeaders == self.unknown0:
-                        self.messages.add("[ ] unknown0 is consistent with CRC32 of headers")
-                elif self.crcHeaders == self.unknown1:
-                        self.messages.add("[ ] unknown1 is consistent with CRC32 of headers")
-                elif self.crcHeaders == self.unknown4:
-                        self.messages.add("[ ] unknown4 is consistent with CRC32 of headers")
-                else:
-                        self.messages.add("[ ] No CRC32 of headers found ({:08X})".format(self.crcHeaders))
-
-
-                self.crcHeaderNZ = self.crcHeaderNZ & 0xFFFFFFFF
-                if self.crcHeaderNZ == self.unknown0:
-                        self.messages.add("[ ] unknown0 is consistent with CRC32 of non-zero header areas")
-                elif self.crcHeaderNZ == self.unknown1:
-                        self.messages.add("[ ] unknown1 is consistent with CRC32 of non-zero header areas")
-                elif self.crcHeaderNZ == self.unknown4:
-                        self.messages.add("[ ] unknown4 is consistent with CRC32 of non-zero header areas")
-                else:
-                        self.messages.add("[ ] No CRC32 of non-zero header areas found ({:08X})".format(self.crcHeaders))
-
-
-                if self.unknown0 == 256:
-                        self.messages.add("[ ] unknown 0 is 256 like always (half blocksize?)")
 
 
         def addChunk(self, chunk):
@@ -841,36 +817,34 @@ class UNDZFile(dz.DZFile, UNDZUtils):
                 """
                 Dump the header from the original file into the output dir
                 """
-                params = open(".dz.params", "wt")
-                params.write('# saved parameters from the file "{:s}"\n'.format(name))
-                params.write("format_major={:d}\n".format(self.formatMajor))
-                params.write("format_minor={:d}\n".format(self.formatMinor))
-                params.write("device={:s}\n".format(self.device.decode("utf8")))
-                params.write("# the property: ro.lge.factoryversion\n")
-                params.write("factoryversion={:s}\n".format(self.ro_lge_factoryversion.decode("utf8")))
-                params.write("# the block size is needed for some sanity checks\n")
-                params.write("blockShift={:d}\nblockSize={:d}\n".format(self.shiftLBA, 1<<self.shiftLBA))
-                params.write("# this is unknown, perhaps indicating block size?\n")
-                params.write("unknown0={:d}\n".format(self.unknown0))
-                params.write("# this is suspected to be a build type indicator of some flavor\n")
-                params.write("build_type={:s}\n".format(self.buildType.decode("utf8")))
-                params.write("# {:d} chunks were in original file\n".format(self.chunkCount))
-                params.write("# guessing this is a date code, perhaps anti-rollback?\n")
-                params.write("old_date_code={:s}\n".format(self.old_date_code.decode("utf8")))
-                params.write("# Appears to indicate Android version, if present\n")
-                params.write("android_version={:s}\n".format(self.android_version.decode("utf8")))
-                params.write("# right size for an MD5 of /something/\n")
-                params.write("unknown1={:s}\n".format(b2a_hex(self.unknown1).decode("utf8")))
-                params.write("# some sort of values for /something/; absent from H901, present on ALL others\n")
-                params.write("unknown2={:s}\n".format(self.unknown2.decode("utf8")))
-                params.write("# date code?  CRC32 of thing with MD5?\n")
-                params.write("unknown3={:s}\n".format(b2a_hex(self.unknown3).decode("utf8")))
-                params.write("# flagging something?\n")
-                params.write("unknown4={:d}\n".format(self.unknown4))
-                params.write("# this almost looks like a bar-code of bytes?\n")
-                params.write("unknown5={:d}\n".format(self.unknown5))
-
-                params.close()
+                with open(".dz.params", "wt") as params:
+                        params.write('# saved parameters from the file "{:s}"\n'.format(name))
+                        params.write("format_major={:d}\n".format(self.formatMajor))
+                        params.write("format_minor={:d}\n".format(self.formatMinor))
+                        params.write("device={:s}\n".format(self.device.decode("utf8")))
+                        params.write("# the property: ro.lge.factoryversion\n")
+                        params.write("factoryversion={:s}\n".format(self.ro_lge_factoryversion.decode("utf8")))
+                        params.write("# the block size is needed for some sanity checks\n")
+                        params.write("blockShift={:d}\nblockSize={:d}\n".format(self.shiftLBA, 1<<self.shiftLBA))
+                        params.write("# this is unknown, perhaps indicating block size?\n")
+                        params.write("unknown0={:d}\n".format(self.unknown0))
+                        params.write("# this is suspected to be a build type indicator of some flavor\n")
+                        params.write("build_type={:s}\n".format(self.buildType.decode("utf8")))
+                        params.write("# {:d} chunks were in original file\n".format(self.chunkCount))
+                        params.write("# guessing this is a date code, perhaps anti-rollback?\n")
+                        params.write("old_date_code={:s}\n".format(self.old_date_code.decode("utf8")))
+                        params.write("# Appears to indicate Android version, if present\n")
+                        params.write("android_version={:s}\n".format(self.android_version.decode("utf8")))
+                        params.write("# right size for an MD5 of /something/\n")
+                        params.write("unknown1={:s}\n".format(b2a_hex(self.unknown1).decode("utf8")))
+                        params.write("# some sort of values for /something/; absent from H901, present on ALL others\n")
+                        params.write("unknown2={:s}\n".format(self.unknown2.decode("utf8")))
+                        params.write("# date code?  CRC32 of thing with MD5?\n")
+                        params.write("unknown3={:s}\n".format(b2a_hex(self.unknown3).decode("utf8")))
+                        params.write("# flagging something?\n")
+                        params.write("unknown4={:d}\n".format(self.unknown4))
+                        params.write("# this almost looks like a bar-code of bytes?\n")
+                        params.write("unknown5={:d}\n".format(self.unknown5))
 
 
         def __init__(self, name):
@@ -946,7 +920,7 @@ class DZFileTools:
         def cmdExtractChunk(self, files):
                 if len(files) == 0:
                         print("[+] Extracting all chunks!\n")
-                        files = range(0, self.dz_file.getChunkCount())
+                        files = range(self.dz_file.getChunkCount())
                 elif len(files) == 1:
                         print("[+] Extracting single chunk!\n")
                 else:
@@ -969,7 +943,7 @@ class DZFileTools:
         def cmdExtractChunkfile(self, files):
                 if len(files) == 0:
                         print("[+] Extracting all chunkfiles!\n")
-                        files = range(0, self.dz_file.getChunkCount())
+                        files = range(self.dz_file.getChunkCount())
                 elif len(files) == 1:
                         print("[+] Extracting single chunkfile!\n")
                 else:
@@ -984,7 +958,7 @@ class DZFileTools:
                         if idx < 0 or idx >= self.dz_file.getChunkCount():
                                 print("[!] Cannot extract out of range chunkfile {:d} (min=0 max={:d})".format(idx, self.dz_file.getChunkCount()-1), file=sys.stderr)
                                 sys.exit(1)
-                        name = self.dz_file.getChunkName(idx) + ".chunk"
+                        name = f"{self.dz_file.getChunkName(idx)}.chunk"
                         file = io.open(name, "wb")
                         self.dz_file.extractChunkfile(file, name, idx)
                         file.close()
@@ -992,7 +966,7 @@ class DZFileTools:
         def cmdExtractSlice(self, files):
                 if len(files) == 0:
                         print("[+] Extracting all slices/partitions\n")
-                        files = range(0, self.dz_file.getSlice(-1).getIndex()+1)
+                        files = range(self.dz_file.getSlice(-1).getIndex()+1)
                 elif len(files) == 1:
                         print("[+] Extracting single slice / partition!\n")
                 else:
@@ -1011,13 +985,13 @@ class DZFileTools:
                         cur = idx
                         slice = self.dz_file.getSlice(cur)
                         if slice.getIndex() != None:
-                            while slice.getIndex() < idx:
-                                cur += idx - slice.getIndex() if slice.getIndex() else 1
-                                slice = self.dz_file.getSlice(cur)
-                                if slice.getIndex() == None:
-                                    slice = self.dz_file.getSlice(idx)
+                                while slice.getIndex() < idx:
+                                        cur += idx - slice.getIndex() if slice.getIndex() else 1
+                                        slice = self.dz_file.getSlice(cur)
+                                        if slice.getIndex() is None:
+                                                slice = self.dz_file.getSlice(idx)
 
-                        name = slice.getSliceName() + ".image"
+                        name = f"{slice.getSliceName()}.image"
                         file = io.FileIO(name, "wb")
                         self.dz_file.extractSlice(file, name, cur)
                         file.close()

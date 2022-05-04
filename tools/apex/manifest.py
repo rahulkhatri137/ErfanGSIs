@@ -24,12 +24,10 @@ android_ns = 'http://schemas.android.com/apk/res/android'
 
 
 def get_children_with_tag(parent, tag_name):
-  children = []
-  for child in  parent.childNodes:
-    if child.nodeType == minidom.Node.ELEMENT_NODE and \
-       child.tagName == tag_name:
-      children.append(child)
-  return children
+  return [
+      child for child in parent.childNodes if
+      child.nodeType == minidom.Node.ELEMENT_NODE and child.tagName == tag_name
+  ]
 
 
 def find_child_with_attribute(element, tag_name, namespace_uri,
@@ -100,13 +98,7 @@ def compare_version_gt(a, b):
   a, a_is_int = as_int(a.upper())
   b, b_is_int = as_int(b.upper())
 
-  if a_is_int == b_is_int:
-    # Both are codenames or both are versions, compare directly
-    return a > b
-  else:
-    # One is a codename, the other is not.  Return true if
-    # b is an integer version
-    return b_is_int
+  return a > b if a_is_int == b_is_int else b_is_int
 
 
 def get_indent(element, default_level):

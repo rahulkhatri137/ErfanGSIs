@@ -195,9 +195,7 @@ ALGORITHMS = {
 def get_release_string():
   """Calculates the release string to use in the VBMeta struct."""
   # Keep in sync with libavb/avb_version.c:avb_version_string().
-  return 'avbtool {}.{}.{}'.format(AVB_VERSION_MAJOR,
-                                   AVB_VERSION_MINOR,
-                                   AVB_VERSION_SUB)
+  return f'avbtool {AVB_VERSION_MAJOR}.{AVB_VERSION_MINOR}.{AVB_VERSION_SUB}'
 
 
 def round_to_multiple(number, size):
@@ -381,7 +379,7 @@ class RSAPublicKey(object):
                            stderr=subprocess.PIPE)
       (pout, perr) = p.communicate()
       if p.wait() != 0:
-        raise AvbError('Error getting public key: {}'.format(perr))
+        raise AvbError(f'Error getting public key: {perr}')
 
     if not pout.lower().startswith(self.MODULUS_PREFIX):
       raise AvbError('Unexpected modulus output')
@@ -444,14 +442,12 @@ class RSAPublicKey(object):
     # Checks requested algorithm for validity.
     algorithm = ALGORITHMS.get(algorithm_name)
     if not algorithm:
-      raise AvbError('Algorithm with name {} is not supported.'
-                     .format(algorithm_name))
+      raise AvbError(f'Algorithm with name {algorithm_name} is not supported.')
 
     if self.num_bits != (algorithm.signature_num_bytes * 8):
-      raise AvbError('Key size of key ({} bits) does not match key size '
-                     '({} bits) of given algorithm {}.'
-                     .format(self.num_bits, algorithm.signature_num_bytes * 8,
-                             algorithm_name))
+      raise AvbError(
+          f'Key size of key ({self.num_bits} bits) does not match key size ({algorithm.signature_num_bytes * 8} bits) of given algorithm {algorithm_name}.'
+      )
 
     # Hashes the data.
     hasher = hashlib.new(algorithm.hash_name)
@@ -488,7 +484,7 @@ class RSAPublicKey(object):
       (pout, perr) = p.communicate(padding_and_hash)
       retcode = p.wait()
       if retcode != 0:
-        raise AvbError('Error signing: {}'.format(perr))
+        raise AvbError(f'Error signing: {perr}')
       signature = pout
     if len(signature) != algorithm.signature_num_bytes:
       raise AvbError('Error signing: Invalid length of signature')
@@ -511,7 +507,7 @@ def lookup_algorithm_by_type(alg_type):
     alg_data = ALGORITHMS[alg_name]
     if alg_data.algorithm_type == alg_type:
       return (alg_name, alg_data)
-  raise AvbError('Unknown algorithm type {}'.format(alg_type))
+  raise AvbError(f'Unknown algorithm type {alg_type}')
 
 
 def lookup_hash_size_by_type(alg_type):
@@ -530,7 +526,7 @@ def lookup_hash_size_by_type(alg_type):
     alg_data = ALGORITHMS[alg_name]
     if alg_data.algorithm_type == alg_type:
       return alg_data.hash_num_bytes
-  raise AvbError('Unsupported algorithm type {}'.format(alg_type))
+  raise AvbError(f'Unsupported algorithm type {alg_type}')
 
 
 def verify_vbmeta_signature(vbmeta_header, vbmeta_blob):
@@ -552,7 +548,7 @@ def verify_vbmeta_signature(vbmeta_header, vbmeta_blob):
   (_, alg) = lookup_algorithm_by_type(vbmeta_header.algorithm_type)
   if not alg.hash_name:
     return True
-  header_blob = vbmeta_blob[0:256]
+  header_blob = vbmeta_blob[:256]
   auth_offset = 256
   aux_offset = auth_offset + vbmeta_header.authentication_data_block_size
   aux_size = vbmeta_header.auxiliary_data_block_size
@@ -584,7 +580,7 @@ def verify_vbmeta_signature(vbmeta_header, vbmeta_blob):
 
   padding_and_digest = alg.padding + computed_digest
 
-  (num_bits,) = struct.unpack('!I', pubkey_blob[0:4])
+  (num_bits,) = struct.unpack('!I', pubkey_blob[:4])
   modulus_blob = pubkey_blob[8:8 + num_bits//8]
   modulus = decode_long(modulus_blob)
   exponent = 65537
@@ -636,7 +632,7 @@ def verify_vbmeta_signature(vbmeta_header, vbmeta_blob):
       (pout, perr) = p.communicate(sig_blob)
       retcode = p.wait()
       if retcode != 0:
-        raise AvbError('Error verifying data: {}'.format(perr))
+        raise AvbError(f'Error verifying data: {perr}')
       if pout != padding_and_digest:
         sys.stderr.write('Signature not correct\n')
         return False
@@ -786,16 +782,14 @@ class ImageHandler(object):
     if magic != self.MAGIC:
       # Not a sparse image, our job here is done.
       return
-    if not (major_version == 1 and minor_version == 0):
-      raise ValueError('Encountered sparse image format version {}.{} but '
-                       'only 1.0 is supported'.format(major_version,
-                                                      minor_version))
+    if major_version != 1 or minor_version != 0:
+      raise ValueError(
+          f'Encountered sparse image format version {major_version}.{minor_version} but only 1.0 is supported'
+      )
     if file_hdr_sz != struct.calcsize(self.HEADER_FORMAT):
-      raise ValueError('Unexpected file_hdr_sz value {}.'.
-                       format(file_hdr_sz))
+      raise ValueError(f'Unexpected file_hdr_sz value {file_hdr_sz}.')
     if chunk_hdr_sz != struct.calcsize(ImageChunk.FORMAT):
-      raise ValueError('Unexpected chunk_hdr_sz value {}.'.
-                       format(chunk_hdr_sz))
+      raise ValueError(f'Unexpected chunk_hdr_sz value {chunk_hdr_sz}.')
 
     self.block_size = block_size
 
@@ -817,9 +811,9 @@ class ImageHandler(object):
 
       if chunk_type == ImageChunk.TYPE_RAW:
         if data_sz != (chunk_sz * self.block_size):
-          raise ValueError('Raw chunk input size ({}) does not match output '
-                           'size ({})'.
-                           format(data_sz, chunk_sz*self.block_size))
+          raise ValueError(
+              f'Raw chunk input size ({data_sz}) does not match output size ({chunk_sz * self.block_size})'
+          )
         self._chunks.append(ImageChunk(ImageChunk.TYPE_RAW,
                                        chunk_offset,
                                        output_offset,
@@ -830,8 +824,8 @@ class ImageHandler(object):
 
       elif chunk_type == ImageChunk.TYPE_FILL:
         if data_sz != 4:
-          raise ValueError('Fill chunk should have 4 bytes of fill, but this '
-                           'has {}'.format(data_sz))
+          raise ValueError(
+              f'Fill chunk should have 4 bytes of fill, but this has {data_sz}')
         fill_data = self._image.read(4)
         self._chunks.append(ImageChunk(ImageChunk.TYPE_FILL,
                                        chunk_offset,
@@ -841,8 +835,7 @@ class ImageHandler(object):
                                        fill_data))
       elif chunk_type == ImageChunk.TYPE_DONT_CARE:
         if data_sz != 0:
-          raise ValueError('Don\'t care chunk input size is non-zero ({})'.
-                           format(data_sz))
+          raise ValueError(f"Don't care chunk input size is non-zero ({data_sz})")
         self._chunks.append(ImageChunk(ImageChunk.TYPE_DONT_CARE,
                                        chunk_offset,
                                        output_offset,
@@ -851,11 +844,11 @@ class ImageHandler(object):
                                        None))
       elif chunk_type == ImageChunk.TYPE_CRC32:
         if data_sz != 4:
-          raise ValueError('CRC32 chunk should have 4 bytes of CRC, but '
-                           'this has {}'.format(data_sz))
+          raise ValueError(
+              f'CRC32 chunk should have 4 bytes of CRC, but this has {data_sz}')
         self._image.read(4)
       else:
-        raise ValueError('Unknown chunk type {}'.format(chunk_type))
+        raise ValueError(f'Unknown chunk type {chunk_type}')
 
       offset += chunk_sz
       output_offset += chunk_sz*self.block_size
@@ -865,12 +858,13 @@ class ImageHandler(object):
 
     # Now that we've traversed all chunks, sanity check.
     if self._num_total_blocks != offset:
-      raise ValueError('The header said we should have {} output blocks, '
-                       'but we saw {}'.format(self._num_total_blocks, offset))
+      raise ValueError(
+          f'The header said we should have {self._num_total_blocks} output blocks, but we saw {offset}'
+      )
     junk_len = len(self._image.read())
     if junk_len > 0:
-      raise ValueError('There were {} bytes of extra data at the end of the '
-                       'file.'.format(junk_len))
+      raise ValueError(
+          f'There were {junk_len} bytes of extra data at the end of the file.')
 
     # Assign |image_size|.
     self.image_size = output_offset
@@ -1014,7 +1008,7 @@ class ImageHandler(object):
       RuntimeError: If the given offset is negative.
     """
     if offset < 0:
-      raise RuntimeError('Seeking with negative offset: {}'.format(offset))
+      raise RuntimeError(f'Seeking with negative offset: {offset}')
     self._file_pos = offset
 
   def read(self, size):
@@ -1139,7 +1133,7 @@ class ImageHandler(object):
 
       self._num_total_chunks = chunk_idx_for_update
       self._num_total_blocks = 0
-      for i in range(0, chunk_idx_for_update):
+      for i in range(chunk_idx_for_update):
         self._num_total_blocks += self._chunks[i].output_size // self.block_size
       self._update_chunks_and_blocks()
       self._image.truncate(truncate_at)
@@ -1176,8 +1170,8 @@ class AvbDescriptor(object):
     assert struct.calcsize(self.FORMAT_STRING) == self.SIZE
 
     if data:
-      (self.tag, num_bytes_following) = (
-          struct.unpack(self.FORMAT_STRING, data[0:self.SIZE]))
+      (self.tag, num_bytes_following) = struct.unpack(self.FORMAT_STRING,
+                                                      data[:self.SIZE])
       self.data = data[self.SIZE:self.SIZE + num_bytes_following]
     else:
       self.tag = None
@@ -1207,7 +1201,7 @@ class AvbDescriptor(object):
     nbf_with_padding = round_to_multiple(num_bytes_following, 8)
     padding_size = nbf_with_padding - num_bytes_following
     desc = struct.pack(self.FORMAT_STRING, self.tag, nbf_with_padding)
-    padding = struct.pack(str(padding_size) + 'x')
+    padding = struct.pack(f'{str(padding_size)}x')
     ret = desc + self.data + padding
     return bytearray(ret)
 
@@ -1264,8 +1258,8 @@ class AvbPropertyDescriptor(AvbDescriptor):
     assert struct.calcsize(self.FORMAT_STRING) == self.SIZE
 
     if data:
-      (tag, num_bytes_following, key_size,
-       value_size) = struct.unpack(self.FORMAT_STRING, data[0:self.SIZE])
+      (tag, num_bytes_following, key_size, value_size) = struct.unpack(
+          self.FORMAT_STRING, data[:self.SIZE])
       expected_size = round_to_multiple(
           self.SIZE - 16 + key_size + 1 + value_size + 1, 8)
       if tag != self.TAG or num_bytes_following != expected_size:
@@ -1274,8 +1268,7 @@ class AvbPropertyDescriptor(AvbDescriptor):
       try:
         self.key = data[self.SIZE:(self.SIZE + key_size)].decode('utf-8')
       except UnicodeDecodeError as e:
-        raise LookupError('Key cannot be decoded as UTF-8: {}.'
-                          .format(e)) from e
+        raise LookupError(f'Key cannot be decoded as UTF-8: {e}.') from e
       self.value = data[(self.SIZE + key_size + 1):(self.SIZE + key_size + 1 +
                                                     value_size)]
     else:
@@ -1313,9 +1306,7 @@ class AvbPropertyDescriptor(AvbDescriptor):
     padding_size = nbf_with_padding - num_bytes_following
     desc = struct.pack(self.FORMAT_STRING, self.TAG, nbf_with_padding,
                        len(key_encoded), len(self.value))
-    ret = (desc + key_encoded + b'\0' + self.value + b'\0' +
-           padding_size * b'\0')
-    return ret
+    return desc + key_encoded + b'\0' + self.value + b'\0' + padding_size * b'\0'
 
   def verify(self, image_dir, image_ext, expected_chain_partitions_map,
              image_containing_descriptor, accept_zeroed_hashtree):
@@ -1395,12 +1386,25 @@ class AvbHashtreeDescriptor(AvbDescriptor):
     assert struct.calcsize(self.FORMAT_STRING) == self.SIZE
 
     if data:
-      (tag, num_bytes_following, self.dm_verity_version, self.image_size,
-       self.tree_offset, self.tree_size, self.data_block_size,
-       self.hash_block_size, self.fec_num_roots, self.fec_offset, self.fec_size,
-       self.hash_algorithm, partition_name_len, salt_len,
-       root_digest_len, self.flags, _) = struct.unpack(self.FORMAT_STRING,
-                                                       data[0:self.SIZE])
+      (
+          tag,
+          num_bytes_following,
+          self.dm_verity_version,
+          self.image_size,
+          self.tree_offset,
+          self.tree_size,
+          self.data_block_size,
+          self.hash_block_size,
+          self.fec_num_roots,
+          self.fec_offset,
+          self.fec_size,
+          self.hash_algorithm,
+          partition_name_len,
+          salt_len,
+          root_digest_len,
+          self.flags,
+          _,
+      ) = struct.unpack(self.FORMAT_STRING, data[:self.SIZE])
       expected_size = round_to_multiple(
           self.SIZE - 16 + partition_name_len + salt_len + root_digest_len, 8)
       if tag != self.TAG or num_bytes_following != expected_size:
@@ -1414,16 +1418,14 @@ class AvbHashtreeDescriptor(AvbDescriptor):
             (self.SIZE + o):(self.SIZE + o + partition_name_len)
         ].decode('utf-8')
       except UnicodeDecodeError as e:
-        raise LookupError('Partition name cannot be decoded as UTF-8: {}.'
-                          .format(e)) from e
+        raise LookupError(f'Partition name cannot be decoded as UTF-8: {e}.') from e
       o += partition_name_len
       self.salt = data[(self.SIZE + o):(self.SIZE + o + salt_len)]
       o += salt_len
       self.root_digest = data[(self.SIZE + o):(self.SIZE + o + root_digest_len)]
 
-      if root_digest_len != self._hashtree_digest_size():
-        if root_digest_len != 0:
-          raise LookupError('root_digest_len doesn\'t match hash algorithm')
+      if root_digest_len not in [self._hashtree_digest_size(), 0]:
+        raise LookupError('root_digest_len doesn\'t match hash algorithm')
 
     else:
       self.dm_verity_version = 0
@@ -1487,9 +1489,8 @@ class AvbHashtreeDescriptor(AvbDescriptor):
                        self.fec_offset, self.fec_size, hash_algorithm_encoded,
                        len(partition_name_encoded), len(self.salt),
                        len(self.root_digest), self.flags, self.RESERVED * b'\0')
-    ret = (desc + partition_name_encoded + self.salt + self.root_digest +
-           padding_size * b'\0')
-    return ret
+    return (desc + partition_name_encoded + self.salt + self.root_digest +
+            padding_size * b'\0')
 
   def verify(self, image_dir, image_ext, expected_chain_partitions_map,
              image_containing_descriptor, accept_zeroed_hashtree):
@@ -1532,19 +1533,19 @@ class AvbHashtreeDescriptor(AvbDescriptor):
     # ... also check that the on-disk hashtree matches
     image.seek(self.tree_offset)
     hash_tree_ondisk = image.read(self.tree_size)
-    is_zeroed = (self.tree_size == 0) or (hash_tree_ondisk[0:8] == b'ZeRoHaSH')
+    is_zeroed = self.tree_size == 0 or hash_tree_ondisk[:8] == b'ZeRoHaSH'
     if is_zeroed and accept_zeroed_hashtree:
-      print('{}: skipping verification since hashtree is zeroed and '
-            '--accept_zeroed_hashtree was given'
-            .format(self.partition_name))
+      print(
+          f'{self.partition_name}: skipping verification since hashtree is zeroed and --accept_zeroed_hashtree was given'
+      )
     else:
       if hash_tree != hash_tree_ondisk:
         sys.stderr.write('hashtree of {} contains invalid data\n'.
                          format(image_filename))
         return False
-      print('{}: Successfully verified {} hashtree of {} for image of {} bytes'
-            .format(self.partition_name, self.hash_algorithm, image.filename,
-                    self.image_size))
+      print(
+          f'{self.partition_name}: Successfully verified {self.hash_algorithm} hashtree of {image.filename} for image of {self.image_size} bytes'
+      )
     # TODO(zeuthen): we could also verify that the FEC stored in the image is
     # correct but this a) currently requires the 'fec' binary; and b) takes a
     # long time; and c) is not strictly needed for verification purposes as
@@ -1591,10 +1592,17 @@ class AvbHashDescriptor(AvbDescriptor):
     assert struct.calcsize(self.FORMAT_STRING) == self.SIZE
 
     if data:
-      (tag, num_bytes_following, self.image_size, self.hash_algorithm,
-       partition_name_len, salt_len,
-       digest_len, self.flags, _) = struct.unpack(self.FORMAT_STRING,
-                                                  data[0:self.SIZE])
+      (
+          tag,
+          num_bytes_following,
+          self.image_size,
+          self.hash_algorithm,
+          partition_name_len,
+          salt_len,
+          digest_len,
+          self.flags,
+          _,
+      ) = struct.unpack(self.FORMAT_STRING, data[:self.SIZE])
       expected_size = round_to_multiple(
           self.SIZE - 16 + partition_name_len + salt_len + digest_len, 8)
       if tag != self.TAG or num_bytes_following != expected_size:
@@ -1607,15 +1615,13 @@ class AvbHashDescriptor(AvbDescriptor):
             (self.SIZE + o):(self.SIZE + o + partition_name_len)
         ].decode('utf-8')
       except UnicodeDecodeError as e:
-        raise LookupError('Partition name cannot be decoded as UTF-8: {}.'
-                          .format(e)) from e
+        raise LookupError(f'Partition name cannot be decoded as UTF-8: {e}.') from e
       o += partition_name_len
       self.salt = data[(self.SIZE + o):(self.SIZE + o + salt_len)]
       o += salt_len
       self.digest = data[(self.SIZE + o):(self.SIZE + o + digest_len)]
-      if digest_len != len(hashlib.new(self.hash_algorithm).digest()):
-        if digest_len != 0:
-          raise LookupError('digest_len doesn\'t match hash algorithm')
+      if digest_len not in [len(hashlib.new(self.hash_algorithm).digest()), 0]:
+        raise LookupError('digest_len doesn\'t match hash algorithm')
 
     else:
       self.image_size = 0
@@ -1655,9 +1661,8 @@ class AvbHashDescriptor(AvbDescriptor):
                        self.image_size, hash_algorithm_encoded,
                        len(partition_name_encoded), len(self.salt),
                        len(self.digest), self.flags, self.RESERVED * b'\0')
-    ret = (desc + partition_name_encoded + self.salt + self.digest +
-           padding_size * b'\0')
-    return ret
+    return (desc + partition_name_encoded + self.salt + self.digest +
+            padding_size * b'\0')
 
   def verify(self, image_dir, image_ext, expected_chain_partitions_map,
              image_containing_descriptor, accept_zeroed_hashtree):
@@ -1691,9 +1696,9 @@ class AvbHashDescriptor(AvbDescriptor):
       sys.stderr.write('{} digest of {} does not match digest in descriptor\n'.
                        format(self.hash_algorithm, image_filename))
       return False
-    print('{}: Successfully verified {} hash of {} for image of {} bytes'
-          .format(self.partition_name, self.hash_algorithm, image.filename,
-                  self.image_size))
+    print(
+        f'{self.partition_name}: Successfully verified {self.hash_algorithm} hash of {image.filename} for image of {self.image_size} bytes'
+    )
     return True
 
 
@@ -1729,8 +1734,12 @@ class AvbKernelCmdlineDescriptor(AvbDescriptor):
     assert struct.calcsize(self.FORMAT_STRING) == self.SIZE
 
     if data:
-      (tag, num_bytes_following, self.flags, kernel_cmdline_length) = (
-          struct.unpack(self.FORMAT_STRING, data[0:self.SIZE]))
+      (
+          tag,
+          num_bytes_following,
+          self.flags,
+          kernel_cmdline_length,
+      ) = struct.unpack(self.FORMAT_STRING, data[:self.SIZE])
       expected_size = round_to_multiple(self.SIZE - 16 + kernel_cmdline_length,
                                         8)
       if tag != self.TAG or num_bytes_following != expected_size:
@@ -1741,8 +1750,8 @@ class AvbKernelCmdlineDescriptor(AvbDescriptor):
         self.kernel_cmdline = data[
             self.SIZE:(self.SIZE + kernel_cmdline_length)].decode('utf-8')
       except UnicodeDecodeError as e:
-        raise LookupError('Kernel command-line cannot be decoded as UTF-8: {}.'
-                          .format(e)) from e
+        raise LookupError(
+            f'Kernel command-line cannot be decoded as UTF-8: {e}.') from e
     else:
       self.flags = 0
       self.kernel_cmdline = ''
@@ -1769,8 +1778,7 @@ class AvbKernelCmdlineDescriptor(AvbDescriptor):
     padding_size = nbf_with_padding - num_bytes_following
     desc = struct.pack(self.FORMAT_STRING, self.TAG, nbf_with_padding,
                        self.flags, len(kernel_cmd_encoded))
-    ret = desc + kernel_cmd_encoded + padding_size * b'\0'
-    return ret
+    return desc + kernel_cmd_encoded + padding_size * b'\0'
 
   def verify(self, image_dir, image_ext, expected_chain_partitions_map,
              image_containing_descriptor, accept_zeroed_hashtree):
@@ -1825,9 +1833,14 @@ class AvbChainPartitionDescriptor(AvbDescriptor):
     assert struct.calcsize(self.FORMAT_STRING) == self.SIZE
 
     if data:
-      (tag, num_bytes_following, self.rollback_index_location,
-       partition_name_len,
-       public_key_len, _) = struct.unpack(self.FORMAT_STRING, data[0:self.SIZE])
+      (
+          tag,
+          num_bytes_following,
+          self.rollback_index_location,
+          partition_name_len,
+          public_key_len,
+          _,
+      ) = struct.unpack(self.FORMAT_STRING, data[:self.SIZE])
       expected_size = round_to_multiple(
           self.SIZE - 16 + partition_name_len + public_key_len, 8)
       if tag != self.TAG or num_bytes_following != expected_size:
@@ -1839,8 +1852,7 @@ class AvbChainPartitionDescriptor(AvbDescriptor):
             (self.SIZE + o):(self.SIZE + o + partition_name_len)
         ].decode('utf-8')
       except UnicodeDecodeError as e:
-        raise LookupError('Partition name cannot be decoded as UTF-8: {}.'
-                          .format(e)) from e
+        raise LookupError(f'Partition name cannot be decoded as UTF-8: {e}.') from e
       o += partition_name_len
       self.public_key = data[(self.SIZE + o):(self.SIZE + o + public_key_len)]
 
@@ -1878,8 +1890,7 @@ class AvbChainPartitionDescriptor(AvbDescriptor):
                        self.rollback_index_location,
                        len(partition_name_encoded), len(self.public_key),
                        self.RESERVED * b'\0')
-    ret = desc + partition_name_encoded + self.public_key + padding_size * b'\0'
-    return ret
+    return desc + partition_name_encoded + self.public_key + padding_size * b'\0'
 
   def verify(self, image_dir, image_ext, expected_chain_partitions_map,
              image_containing_descriptor, accept_zeroed_hashtree):
@@ -1920,8 +1931,9 @@ class AvbChainPartitionDescriptor(AvbDescriptor):
                        format(self.partition_name))
       return False
 
-    print('{}: Successfully verified chain partition descriptor matches '
-          'expected data'.format(self.partition_name))
+    print(
+        f'{self.partition_name}: Successfully verified chain partition descriptor matches expected data'
+    )
 
     return True
 
@@ -2199,9 +2211,9 @@ class Avb(object):
     pattern = bytearray([x & 0xFF for x in range(start_byte, start_byte + 256)])
     buf = bytearray()
     c = int(math.ceil(image_size / 256.0))
-    for _ in range(0, c):
+    for _ in range(c):
       buf.extend(pattern)
-    output.write(buf[0:image_size])
+    output.write(buf[:image_size])
 
   def extract_vbmeta_image(self, output, image_filename, padding_size):
     """Implements the 'extract_vbmeta_image' command.
@@ -2281,14 +2293,11 @@ class Avb(object):
     if not footer:
       raise AvbError('Given image does not have a footer.')
 
-    # Search for a hashtree descriptor to figure out the location and
-    # size of the hashtree and FEC.
-    ht_desc = None
-    for desc in descriptors:
-      if isinstance(desc, AvbHashtreeDescriptor):
-        ht_desc = desc
-        break
-
+    ht_desc = next(
+        (desc
+         for desc in descriptors if isinstance(desc, AvbHashtreeDescriptor)),
+        None,
+    )
     if not ht_desc:
       raise AvbError('No hashtree descriptor was found.')
 
@@ -2335,9 +2344,9 @@ class Avb(object):
 
     image = ImageHandler(image_filename)
     if partition_size % image.block_size != 0:
-      raise AvbError('Partition size of {} is not a multiple of the image '
-                     'block size {}.'.format(partition_size,
-                                             image.block_size))
+      raise AvbError(
+          f'Partition size of {partition_size} is not a multiple of the image block size {image.block_size}.'
+      )
     (footer, _, _, _) = self._parse_image(image)
     if not footer:
       raise AvbError('Given image does not have a footer.')
@@ -2350,10 +2359,9 @@ class Avb(object):
                                                % image.block_size)
 
     if partition_size < vbmeta_end_offset + 1 * image.block_size:
-      raise AvbError('Requested size of {} is too small for an image '
-                     'of size {}.'
-                     .format(partition_size,
-                             vbmeta_end_offset + 1 * image.block_size))
+      raise AvbError(
+          f'Requested size of {partition_size} is too small for an image of size {vbmeta_end_offset + 1 * image.block_size}.'
+      )
 
     # Cut at the end of the vbmeta blob and insert a DONT_CARE chunk
     # with enough bytes such that the final Footer block is at the end
@@ -2384,7 +2392,7 @@ class Avb(object):
     """
     tokens = slot_data.split(':')
     if len(tokens) != 6:
-      raise AvbError('Malformed slot data "{}".'.format(slot_data))
+      raise AvbError(f'Malformed slot data "{slot_data}".')
     a_priority = int(tokens[0])
     a_tries_remaining = int(tokens[1])
     a_success = int(tokens[2]) != 0
@@ -2510,7 +2518,7 @@ class Avb(object):
       for cp in expected_chain_partitions:
         cp_tokens = cp.split(':')
         if len(cp_tokens) != 3:
-          raise AvbError('Malformed chained partition "{}".'.format(cp))
+          raise AvbError(f'Malformed chained partition "{cp}".')
         partition_name = cp_tokens[0]
         rollback_index_location = int(cp_tokens[1])
         file_path = cp_tokens[2]
@@ -2524,19 +2532,14 @@ class Avb(object):
 
     key_blob = None
     if key_path:
-      print('Verifying image {} using key at {}'.format(image_filename,
-                                                        key_path))
+      print(f'Verifying image {image_filename} using key at {key_path}')
       key_blob = RSAPublicKey(key_path).encode()
     else:
-      print('Verifying image {} using embedded public key'.format(
-          image_filename))
+      print(f'Verifying image {image_filename} using embedded public key')
 
     image = ImageHandler(image_filename, read_only=True)
     (footer, header, descriptors, _) = self._parse_image(image)
-    offset = 0
-    if footer:
-      offset = footer.vbmeta_offset
-
+    offset = footer.vbmeta_offset if footer else 0
     image.seek(offset)
     vbmeta_blob = image.read(header.SIZE
                              + header.authentication_data_block_size
@@ -2544,8 +2547,9 @@ class Avb(object):
 
     alg_name, _ = lookup_algorithm_by_type(header.algorithm_type)
     if not verify_vbmeta_signature(header, vbmeta_blob):
-      raise AvbError('Signature check failed for {} vbmeta struct {}'
-                     .format(alg_name, image_filename))
+      raise AvbError(
+          f'Signature check failed for {alg_name} vbmeta struct {image_filename}'
+      )
 
     if key_blob:
       # The embedded public key is in the auxiliary block at an offset.
@@ -2558,11 +2562,13 @@ class Avb(object):
         raise AvbError('Embedded public key does not match given key.')
 
     if footer:
-      print('vbmeta: Successfully verified footer and {} vbmeta struct in {}'
-            .format(alg_name, image.filename))
+      print(
+          f'vbmeta: Successfully verified footer and {alg_name} vbmeta struct in {image.filename}'
+      )
     else:
-      print('vbmeta: Successfully verified {} vbmeta struct in {}'
-            .format(alg_name, image.filename))
+      print(
+          f'vbmeta: Successfully verified {alg_name} vbmeta struct in {image.filename}'
+      )
 
     for desc in descriptors:
       if (isinstance(desc, AvbChainPartitionDescriptor)
@@ -2571,10 +2577,9 @@ class Avb(object):
         # In this case we're processing a chain descriptor but don't have a
         # --expect_chain_partition ... however --follow_chain_partitions was
         # specified so we shouldn't error out in desc.verify().
-        print('{}: Chained but ROLLBACK_SLOT (which is {}) '
-              'and KEY (which has sha1 {}) not specified'
-              .format(desc.partition_name, desc.rollback_index_location,
-                      hashlib.sha1(desc.public_key).hexdigest()))
+        print(
+            f'{desc.partition_name}: Chained but ROLLBACK_SLOT (which is {desc.rollback_index_location}) and KEY (which has sha1 {hashlib.sha1(desc.public_key).hexdigest()}) not specified'
+        )
       elif not desc.verify(image_dir, image_ext, expected_chain_partitions_map,
                            image, accept_zeroed_hashtree):
         raise AvbError('Error verifying descriptor.')
@@ -2601,9 +2606,7 @@ class Avb(object):
     """
     image_dir = os.path.dirname(image_filename)
     image_ext = os.path.splitext(image_filename)[1]
-    json_partitions = None
-    if as_json:
-      json_partitions = []
+    json_partitions = [] if as_json else None
     self._print_partition_digests(
         image_filename, output, json_partitions, image_dir, image_ext)
     if as_json:

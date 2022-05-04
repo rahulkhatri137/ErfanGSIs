@@ -156,14 +156,12 @@ class GPT(object):
 				verbose("Note: {:d} unused blocks between GPT header and entry table".format(self.myLBA-endEntry+1))
 
 		current = self.dataStartLBA
-		idx = 1
-		for slice in self.slices:
+		for idx, slice in enumerate(self.slices, start=1):
 			if slice.type != UUID(int=0):
 				if slice.startLBA != current:
 					verbose("Note: non-contiguous ({:d} unused)".format(slice.startLBA-current))
 				current = slice.endLBA + 1
 			slice.display(idx)
-			idx += 1
 		current-=1
 		if self.dataEndLBA != current:
 			verbose("Note: empty LBAs at end ({:d} unused)".format(self.dataEndLBA-current))
@@ -177,10 +175,11 @@ class GPT(object):
 		if len(buf) < self._gpt_size:
 			raise NoGPT("Failed to locate GPT")
 
-		data = dict(zip(
-			self._gpt_head_fmt.keys(),
-			self._gpt_struct.unpack(buf[0:self._gpt_size])
-		))
+		data = dict(
+		    zip(
+		        self._gpt_head_fmt.keys(),
+		        self._gpt_struct.unpack(buf[:self._gpt_size]),
+		    ))
 
 		if data['header'] != self._gpt_header:
 			return None
@@ -289,7 +288,7 @@ class GPT(object):
 
 		self.slices = []
 		crc = 0
-		for i in range(self.entryCount):
+		for _ in range(self.entryCount):
 			sbuf = buf[sliceAddr:sliceAddr+self.entrySize]
 			crc = crc32(sbuf, crc)
 			slice = GPTSlice(sbuf)
@@ -323,11 +322,7 @@ if __name__ == "__main__":
 	del sys.argv[0]
 
 	for arg in sys.argv:
-		if arg == "-":
-			file = sys.stdin
-		else:
-			file = io.FileIO(arg, "rb")
-
+		file = sys.stdin if arg == "-" else io.FileIO(arg, "rb")
 		# header is always in second LBA, slice entries in third
 		# if you run out of slice entries with a 64KB LBA, oy vey!
 		buf = file.read(1<<17+1<<16)

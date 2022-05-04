@@ -45,10 +45,7 @@ def FindProgram(prog_name):
   """
   exec_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
   prog_path = os.path.join(exec_dir, prog_name)
-  if os.path.exists(prog_path):
-    return prog_path
-  else:
-    return prog_name
+  return prog_path if os.path.exists(prog_path) else prog_name
 def ParseArguments(argv):
   """Parses the input arguments to the program."""
   parser = argparse.ArgumentParser(
@@ -134,19 +131,19 @@ def ConstructE2fsCommands(args):
   if args.file_contexts:
     e2fsdroid_opts += ["-S", args.file_contexts]
   if args.flash_erase_block_size:
-    mke2fs_extended_opts.append("stripe_width={}".format(
-        int(args.flash_erase_block_size) / BLOCKSIZE))
+    mke2fs_extended_opts.append(
+        f"stripe_width={int(args.flash_erase_block_size) / BLOCKSIZE}")
   if args.flash_logical_block_size:
     # stride should be the max of 8kb and the logical block size
     stride = max(int(args.flash_logical_block_size), 8192)
-    mke2fs_extended_opts.append("stride={}".format(stride / BLOCKSIZE))
+    mke2fs_extended_opts.append(f"stride={stride / BLOCKSIZE}")
   if args.mke2fs_hash_seed:
-    mke2fs_extended_opts.append("hash_seed=" + args.mke2fs_hash_seed)
+    mke2fs_extended_opts.append(f"hash_seed={args.mke2fs_hash_seed}")
   if args.journal_size:
     if args.journal_size == "0":
       mke2fs_opts += ["-O", "^has_journal"]
     else:
-      mke2fs_opts += ["-J", "size=" + args.journal_size]
+      mke2fs_opts += ["-J", f"size={args.journal_size}"]
   if args.label:
     mke2fs_opts += ["-L", args.label]
   if args.inodes:

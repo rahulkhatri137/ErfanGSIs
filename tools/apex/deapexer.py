@@ -96,8 +96,7 @@ class ApexImageEntry(object):
       ret += '-'
 
     def mask_as_string(m):
-      ret = 'r' if m & 4 == 4 else '-'
-      ret += 'w' if m & 2 == 2 else '-'
+      ret = ('r' if m & 4 == 4 else '-') + ('w' if m & 2 == 2 else '-')
       ret += 'x' if m & 1 == 1 else '-'
       return ret
 
@@ -119,8 +118,7 @@ class ApexImageDirectory(object):
     for e in self._entries:
       yield e
       if e.is_directory and e.name != '.' and e.name != '..':
-        for ce in self.enter_subdir(e).list(is_recursive):
-          yield ce
+        yield from self.enter_subdir(e).list(is_recursive)
 
   def enter_subdir(self, entry):
     return self._apex._list(self._path + entry.name + '/')
@@ -153,9 +151,12 @@ class Apex(object):
   def _list(self, path):
     if path in self._cache:
       return self._cache[path]
-    process = subprocess.Popen([self._debugfs, '-R', 'ls -l -p %s' % path, self._payload],
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               universal_newlines=True)
+    process = subprocess.Popen(
+        [self._debugfs, '-R', f'ls -l -p {path}', self._payload],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+    )
     stdout, _ = process.communicate()
     res = str(stdout)
     entries = []
@@ -176,9 +177,12 @@ class Apex(object):
       is_directory=bits[1]=='4'
 
       if not is_symlink and not is_directory:
-        process = subprocess.Popen([self._debugfs, '-R', 'dump_extents <%s>' % ino,
-                                    self._payload], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                    universal_newlines=True)
+        process = subprocess.Popen(
+            [self._debugfs, '-R', f'dump_extents <{ino}>', self._payload],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
         stdout, _ = process.communicate()
         # Output of dump_extents for an inode fragmented in 3 blocks (length and addresses represent
         # block-sized sections):
@@ -208,9 +212,12 @@ class Apex(object):
     return ApexImageDirectory(path, entries, self)
 
   def _extract(self, path, dest):
-    process = subprocess.Popen([self._debugfs, '-R', 'rdump %s %s' % (path, dest), self._payload],
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               universal_newlines=True)
+    process = subprocess.Popen(
+        [self._debugfs, '-R', f'rdump {path} {dest}', self._payload],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+    )
     _, stderr = process.communicate()
     if process.returncode != 0:
       print(stderr, file=sys.stderr)
@@ -232,7 +239,7 @@ def RunList(args):
         continue
       res = ''
       if args.size:
-        res += e.size + ' '
+        res += f'{e.size} '
       res += e.full_path
       if args.extents:
         res += ' [' + '-'.join(str(x) for x in e.extents) + ']'
@@ -267,9 +274,9 @@ def GetType(apex_path):
     names = zip_file.namelist()
     has_payload = 'apex_payload.img' in names
     has_original_apex = 'original_apex' in names
-    if has_payload and has_original_apex:
-      return ApexType.INVALID
     if has_payload:
+      if has_original_apex:
+        return ApexType.INVALID
       return ApexType.UNCOMPRESSED
     if has_original_apex:
       return ApexType.COMPRESSED
@@ -280,7 +287,7 @@ def RunInfo(args):
   if args.print_type:
     res = GetType(args.apex)
     if res == ApexType.INVALID:
-      print(args.apex + ' is not a valid apex')
+      print(f'{args.apex} is not a valid apex')
       sys.exit(1)
     print(res.name)
   else:

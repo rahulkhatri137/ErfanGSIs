@@ -20,13 +20,12 @@ import sys
 def main(argv):
     original_file = 'manifest.xml'
 
-    if len(argv) == 4:
-        output_file_path = argv[1]
-        override_file_path = argv[2]
-        original_file = argv[3]
-    else:
-        raise ValueError("Wrong number of arguments %s" % len(argv))
+    if len(argv) != 4:
+        raise ValueError(f"Wrong number of arguments {len(argv)}")
 
+    output_file_path = argv[1]
+    override_file_path = argv[2]
+    original_file = argv[3]
     fallbackPlaceholderFound = False
     with open(original_file, 'r') as input_file:
         with open(output_file_path, 'w') as output_file:
@@ -39,7 +38,7 @@ def main(argv):
                             output_file.write(override_line)
                 output_file.write(line)
     if not fallbackPlaceholderFound:
-        raise ValueError('</manifest>not found in source file: %s' % original_file)
+        raise ValueError(f'</manifest>not found in source file: {original_file}')
 
 if __name__ == '__main__':
     main(sys.argv)
